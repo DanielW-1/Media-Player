@@ -1,0 +1,16 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Log files
+*.log
+
+# System/IDE files
+.DS_Store
+.vscode/
+.idea/
+
+# Media (you're excluding locally)
+media-storage/
