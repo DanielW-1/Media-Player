@@ -9,9 +9,9 @@ app.use(express.json()); // Parse incoming JSON
 // Routes
 app.use('/api/songs', songRoutes);
 
-// Health check route (optional)
+// Health check route
 app.get('/', (req, res) => {
-  res.send('🎵 Spotify clone backend is running');
+  res.send('🎵 Backend is running');
 });
 
 module.exports = app;
