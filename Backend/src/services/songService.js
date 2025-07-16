@@ -14,7 +14,7 @@ const streamSongById = async (songId, req, res) => {
   }
 
   const songPath = path.resolve(__dirname, '../../../Media-Storage', song.file_url); // full path
-  const stat = fs.statSync(songPath);
+   const stat = await fs.promises.stat(songPath);
   const fileSize = stat.size;
   const range = req.headers.range;
 
@@ -23,14 +23,21 @@ const streamSongById = async (songId, req, res) => {
     res.writeHead(200, {
       'Content-Length': fileSize,
       'Content-Type': 'audio/mpeg',
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'public, max-age=86400', // 1 day
     });
-    fs.createReadStream(songPath).pipe(res);
+    fs.createReadStream(songPath)
+        .on('error', (err) => {
+          console.error('Stream error:', err);
+          res.status(500).end('Internal Server Error');
+        })
+        .pipe(res);
+      return;
   } else {
     // Partial stream (for seeking/buffering)
     const parts = range.replace(/bytes=/, '').split('-');
     const start = parseInt(parts[0], 10);
     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
     const chunkSize = end - start + 1;
     const file = fs.createReadStream(songPath, { start, end });
 
@@ -39,9 +46,15 @@ const streamSongById = async (songId, req, res) => {
       'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize,
       'Content-Type': 'audio/mpeg',
+      'Cache-Control': 'public, max-age=86400',
     });
+    file
+      .on('error', (err) => {
+        console.error('Stream error:', err);
+        res.status(500).end('Internal Server Error');
+      })
+      .pipe(res);
 
-    file.pipe(res);
   }
 };
 
