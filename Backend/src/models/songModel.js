@@ -17,6 +17,18 @@ const findSongsByName = async (name) => {
     throw err;
   }
 };
+const findSongById = async (songId) => {
+  try {
+    const song = await prisma.song.findUnique({
+      where: { id: parseInt(songId) },
+    });
+    return song;
+  }
+  catch (err) {
+    console.error('Error in findSongById:', err);
+    throw err;
+  }
+};
 const addSong = async (songData) => {
   const { title, artist, album, genre, file_url } = songData;
   try {
@@ -39,5 +51,6 @@ const addSong = async (songData) => {
 
 module.exports = {
   findSongsByName,
-  addSong
+  addSong,
+  findSongById
 };

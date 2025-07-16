@@ -16,7 +16,22 @@ const addSong = async (req, res) => {
     res.status(500).json({ error: 'Failed to add song' });
   }
 };
+
+const streamSong = async (req, res) => {
+  try {
+    const songId = req.params.id;
+
+    // Delegate streaming logic to the service
+    await SongService.streamSongById(songId, req, res);
+    
+  } catch (err) {
+    console.error('Error in streamSong controller:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
     searchSongs,
-    addSong
+    addSong,
+    streamSong
 };
