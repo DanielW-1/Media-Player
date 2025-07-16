@@ -1,15 +1,17 @@
-const pool = require('../DB/db'); // adjust path if needed
-
+const pool = require('../DB/db');
+const prisma = require('../DB/prisma');
 const findSongsByName = async (name) => {
   try {
-    const query = `
-      SELECT * FROM songs
-      WHERE title ILIKE $1
-      LIMIT 10;
-    `;
-    const values = [`%${name}%`]; // partial match
-    const result = await pool.query(query, values);
-    return result.rows; // array of matching songs
+    const songs = await prisma.song.findMany({
+      where: {
+        title: {
+          contains: name,
+          mode: 'insensitive',
+        },
+      },
+      take: 10,
+    });
+    return songs;
   } catch (err) {
     console.error('Error in findSongsByName:', err);
     throw err;
@@ -17,20 +19,20 @@ const findSongsByName = async (name) => {
 };
 const addSong = async (songData) => {
   const { title, artist, album, genre, file_url } = songData;
-
-  const query = `
-    INSERT INTO songs (title, artist, album, genre, file_url)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *;
-  `;
-
-  const values = [title, artist, album, genre, file_url];
-
   try {
-    const result1 = await pool.query(query, values);
-    return result1.rows[0]; // return the inserted song
+    const newSong = await prisma.song.create({
+      data: {
+        title,
+        artist,
+        album,
+        genre,
+        file_url,
+      },
+    });
+
+    return newSong; // Prisma returns the inserted record
   } catch (err) {
-    console.error('Error in insertSong:', err);
+    console.error('Error in addSong:', err);
     throw err;
   }
 };
